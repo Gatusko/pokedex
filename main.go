@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/Gatusko/pokedex/internal"
 	"os"
+	"time"
 )
 
 var mapOfCommands = make(map[string]cliCommand)
@@ -57,11 +58,10 @@ func mapArea() error {
 	if &currentUrl == nil {
 		return errors.New("There is no more areas use mapb for previous Area")
 	}
-	areas, err := internal.GetAreas(*currentUrl)
+	areas, err := client.GetAreas(*currentUrl)
 	if err != nil {
 		return errors.New("Errror retrieving the Areas")
 	}
-	fmt.Print(areas)
 	currentUrl = areas.Next
 	previousUrl = areas.Previous
 	printAllAreas(areas)
@@ -72,7 +72,7 @@ func BMapArea() error {
 	if previousUrl == nil {
 		return errors.New("There is no more areas use mapb for previous Area")
 	}
-	areas, err := internal.GetAreas(*previousUrl)
+	areas, err := client.GetAreas(*previousUrl)
 	if err != nil {
 		return errors.New("Errror retrieving the Areas")
 	}
@@ -95,10 +95,16 @@ func commandExit() error {
 	return nil
 }
 
+var client internal.Client
+
 func main() {
 	firstUrl := "https://pokeapi.co/api/v2/location-area/"
 	currentUrl = &firstUrl
 	fmt.Println("POKEDEX")
+	cache := internal.Cache{}
+
+	cache.NewCache(time.Duration(5 * time.Second))
+	client.NewClient(cache)
 	// init a new Map
 	mapOfCommands = createMap()
 	// this make a Scan
