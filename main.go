@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/Gatusko/pokedex/internal"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -13,6 +14,9 @@ var mapOfCommands = make(map[string]cliCommand)
 
 var currentUrl *string
 var previousUrl *string
+var secondLineCommand *string
+
+const baseExploreURL = "https://pokeapi.co/api/v2/location-area/"
 
 type urls struct {
 	currentUrl string
@@ -46,11 +50,22 @@ func createMap() map[string]cliCommand {
 			description: "Get Previous 20 ",
 			callback:    BMapArea,
 		},
+		"explore": {
+			name:        "explore",
+			description: "explore an area of pokemons ",
+			callback:    ExplorePokemonCommand,
+		},
 	}
 }
 func printAllAreas(areas internal.Areas) {
 	for _, area := range areas.Results {
 		fmt.Println(area.Name)
+	}
+}
+
+func printAllPokemons(pokemons internal.ExplorePokemon) {
+	for _, pokemon := range pokemons.PokemonEncounters {
+		fmt.Println(pokemon.Name)
 	}
 }
 
@@ -81,6 +96,21 @@ func BMapArea() error {
 	printAllAreas(areas)
 	return nil
 }
+
+func ExplorePokemonCommand() error {
+	if secondLineCommand == nil {
+		return errors.New("Need to select Area to explore Pokemons")
+	}
+	exploreUrl := baseExploreURL + *secondLineCommand
+	exporeArea, err := client.ExplorePokemon(exploreUrl)
+
+	if err != nil {
+		return err
+	}
+	printAllPokemons(exporeArea)
+	return nil
+}
+
 func commandHelp() error {
 	fmt.Println("Commands:")
 	for _, commands := range mapOfCommands {
@@ -112,8 +142,20 @@ func main() {
 	// for each read line
 	fmt.Print("Pokedex>")
 	for scanner.Scan() {
+		scannedString := scanner.Text()
+		splitedCommand := strings.Split(scannedString, " ")
+		if len(splitedCommand) > 2 {
+			fmt.Println("too many arguments", scanner.Text())
+			fmt.Print("Pokedex>")
+			continue
+		}
+
+		if len(splitedCommand) == 2 {
+			secondLineCommand = &splitedCommand[1]
+		}
+
 		fmt.Println(scanner.Text())
-		command, ok := mapOfCommands[scanner.Text()]
+		command, ok := mapOfCommands[splitedCommand[0]]
 		if !ok {
 			fmt.Println("command doesnt exist :", scanner.Text())
 			fmt.Print("Pokedex>")

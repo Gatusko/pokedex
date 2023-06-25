@@ -38,14 +38,41 @@ func (c *Client) GetAreas(currentUrl string) (Areas, error) {
 		return Areas{}, err
 	}
 	body, err := io.ReadAll(res.Body)
-	c.cache.add(currentUrl, body)
 	if err != nil {
 		return Areas{}, err
 	}
+	c.cache.add(currentUrl, body)
 	areas := Areas{}
 	errM := json.Unmarshal(body, &areas)
 	if errM != nil {
 		return Areas{}, errM
 	}
 	return areas, nil
+}
+
+func (c *Client) ExplorePokemon(url string) (ExplorePokemon, error) {
+	bodyCache, isOnCache := c.cache.get(url)
+	explorePokemon := ExplorePokemon{}
+	if isOnCache {
+		errM := json.Unmarshal(bodyCache, &explorePokemon)
+		if errM != nil {
+			return ExplorePokemon{}, errM
+		}
+		return explorePokemon, nil
+	}
+	res, err := http.Get(url)
+	if err != nil {
+		return ExplorePokemon{}, err
+	}
+	body, err := io.ReadAll(res.Body)
+
+	if err != nil {
+		return explorePokemon, err
+	}
+	err = json.Unmarshal(body, &explorePokemon)
+	if err != nil {
+		return explorePokemon, err
+	}
+	c.cache.add(url, body)
+	return explorePokemon, nil
 }
