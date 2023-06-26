@@ -12,12 +12,13 @@ func TestGetPokemon(t *testing.T) {
 	client.NewClient(cache)
 	_, err := client.ExplorePokemon("https://pokeapi.co/api/v2/location-area/canalave-city-area")
 	if err != nil {
+		t.Errorf("Expected to find the area")
 		return
 	}
-	t.Errorf("Expected to find the area")
 	_, err = client.ExplorePokemon("https://pokeapi.co/api/v2/location-area/canalave-city-areaewfaerfa")
 	if err != nil {
-		t.Errorf("Expected to not find any pokemon")
+		return
 	}
+	t.Errorf("Expected to not find any pokemon")
 	return
 }

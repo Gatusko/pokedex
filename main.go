@@ -17,6 +17,7 @@ var previousUrl *string
 var secondLineCommand *string
 
 const baseExploreURL = "https://pokeapi.co/api/v2/location-area/"
+const basePokemonUrl = "https://pokeapi.co/api/v2/pokemon/"
 
 type urls struct {
 	currentUrl string
@@ -55,7 +56,53 @@ func createMap() map[string]cliCommand {
 			description: "explore an area of pokemons ",
 			callback:    ExplorePokemonCommand,
 		},
+		"catch": {
+			name:        "catch",
+			description: "catch a pokemon ",
+			callback:    CatchPokemon,
+		},
+		"inspect": {
+			name:        "inspect",
+			description: "inspect a pokemon ",
+			callback:    InspectPokemon,
+		},
 	}
+}
+
+func CatchPokemon() error {
+	url := basePokemonUrl + *secondLineCommand
+	pokemon, err := client.GetPokemon(url)
+	if err != nil {
+		errorName := "Pokemon not founnd: " + *secondLineCommand
+		return errors.New(errorName)
+	}
+	fmt.Println("Trying to catch:", *secondLineCommand)
+	if client.Pokedex.CatchPokemon(pokemon) {
+		fmt.Println("Pokemon catched: ", *secondLineCommand)
+		return nil
+	} else {
+		fmt.Println("Pokemon escaped:", *secondLineCommand)
+		return nil
+	}
+}
+
+func InspectPokemon() error {
+	pokemon, ok := client.Pokedex.GetPokemon(*secondLineCommand)
+	if !ok {
+		return errors.New("Pokemon not found on pokedex")
+	}
+	fmt.Println("Name:", pokemon.Name)
+	fmt.Println("Height:", pokemon.Height)
+	fmt.Println("Weight:", pokemon.Weight)
+	fmt.Println("Stats:")
+	for _, stats := range pokemon.Stats {
+		fmt.Println("-", stats.Stat.Name, ":", stats.BaseStat)
+	}
+	fmt.Println("Types")
+	for _, types := range pokemon.Types {
+		fmt.Println("-", types.Type.Name)
+	}
+	return nil
 }
 func printAllAreas(areas internal.Areas) {
 	for _, area := range areas.Results {

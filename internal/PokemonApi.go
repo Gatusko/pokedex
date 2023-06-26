@@ -2,25 +2,19 @@ package internal
 
 import (
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 )
 
-type Areas struct {
-	Count    int     `json:"count"`
-	Next     *string `json:"next"`
-	Previous *string `json:"previous"`
-	Results  []struct {
-		Name string `json:"name"`
-		URL  string `json:"url"`
-	} `json:"results"`
-}
 type Client struct {
 	cache Cache
+	Pokedex
 }
 
 func (c *Client) NewClient(cache Cache) {
 	c.cache = cache
+	c.Pokedex = NewPokedex()
 }
 
 func (c *Client) GetAreas(currentUrl string) (Areas, error) {
@@ -75,4 +69,26 @@ func (c *Client) ExplorePokemon(url string) (ExplorePokemon, error) {
 	}
 	c.cache.add(url, body)
 	return explorePokemon, nil
+}
+
+func (c *Client) GetPokemon(url string) (PokemonData, error) {
+	bodyCache, isOnCache := c.cache.get(url)
+	pokemonData := PokemonData{}
+	if isOnCache {
+		errM := json.Unmarshal(bodyCache, &pokemonData)
+		if errM != nil {
+			return pokemonData, errM
+		}
+		return pokemonData, nil
+	}
+	res, err := http.Get(url)
+	if err != nil {
+		return pokemonData, err
+	}
+	if res.StatusCode != 200 {
+		return pokemonData, errors.New("Pokemon not found")
+	}
+	body, err := io.ReadAll(res.Body)
+	json.Unmarshal(body, &pokemonData)
+	return pokemonData, nil
 }
