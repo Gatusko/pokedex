@@ -18,7 +18,7 @@ func TestListAllPokemon(t *testing.T) {
 	var types []Types
 	pokemon := PokemonData{"test", 1.0, 1, stats, 1, types}
 	pokedex.addPokemon(pokemon)
-	pokedex.listAllPokemon()
+	pokedex.ListAllPokemon()
 }
 
 func TestPokedex_CatchPokemon(t *testing.T) {

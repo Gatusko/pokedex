@@ -66,6 +66,11 @@ func createMap() map[string]cliCommand {
 			description: "inspect a pokemon ",
 			callback:    InspectPokemon,
 		},
+		"pokedex": {
+			name:        "pokedex",
+			description: "List all your pokemonCatched ",
+			callback:    ListAllPokemon,
+		},
 	}
 }
 
@@ -84,6 +89,12 @@ func CatchPokemon() error {
 		fmt.Println("Pokemon escaped:", *secondLineCommand)
 		return nil
 	}
+}
+
+func ListAllPokemon() error {
+	fmt.Println("Your Pokedex: ")
+	client.ListAllPokemon()
+	return nil
 }
 
 func InspectPokemon() error {
@@ -201,7 +212,6 @@ func main() {
 			secondLineCommand = &splitedCommand[1]
 		}
 
-		fmt.Println(scanner.Text())
 		command, ok := mapOfCommands[splitedCommand[0]]
 		if !ok {
 			fmt.Println("command doesnt exist :", scanner.Text())

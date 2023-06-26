@@ -9,9 +9,9 @@ type Pokedex struct {
 	pokemonCatched map[string]PokemonData
 }
 
-func (p *Pokedex) listAllPokemon() {
+func (p *Pokedex) ListAllPokemon() {
 	for _, pokemon := range p.pokemonCatched {
-		fmt.Println(pokemon)
+		fmt.Println("- ", pokemon.Name)
 	}
 }
 
